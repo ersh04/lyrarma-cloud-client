@@ -1,0 +1,16 @@
+{
+    "BACKGROUND": "#232332",
+    "SURFACE": "#1e1e2d",
+    "SURFACE_SOFT": "#2a2a3d",
+    "BORDER": "#3a3a5c",
+    "TEXT": "#ffffff",
+    "MUTED": "#a3a3c2",
+    "PRIMARY": "#6464ff",
+    "PRIMARY_HOVER": "#7575ff",
+    "DANGER": "#ff9b9b",
+    "DANGER_BG": "#33252f",
+    "SUCCESS": "#b9ffcc",
+    "SUCCESS_BG": "#24352f",
+    "WARNING": "#ffe27a",
+    "WARNING_BG": "#363326"
+}

@@ -23,13 +23,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
+          pip install flet pyinstaller pillow
 
       - name: Build with Flet Pack
         run: |
-          flet pack src/main.py --name "LyrarmaCloudClient"
+          flet pack src/main.py --icon icon.ico --name "LyrarmaCloudClient" --add-data "src/lyrarma_cloud_client/assets;lyrarma_cloud_client/assets"
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Windows-Executable
+          name: Lyrarma-Cloud-Client-Windows-Executable
           path: dist/*.exe

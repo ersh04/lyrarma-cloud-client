@@ -1,6 +1,8 @@
+import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import flet as ft
 
@@ -134,3 +136,55 @@ def test_all_primary_flet_screens_build(tmp_path: Path) -> None:
         assert isinstance(workspace.content, ft.Column)
         assert workspace.content.scroll == ft.ScrollMode.AUTO
         assert_valid_wrapping_rows(root)
+
+
+class DummyWindow:
+    def __init__(self) -> None:
+        self.visible = True
+        self.prevent_close = True
+        self.destroyed = False
+        self.brought_to_front = False
+
+    async def destroy(self) -> None:
+        self.destroyed = True
+
+    async def to_front(self) -> None:
+        self.brought_to_front = True
+
+
+class DummyTray:
+    def __init__(self) -> None:
+        self.stopped = False
+
+    def stop(self) -> None:
+        self.stopped = True
+
+
+def test_only_close_window_event_hides_the_application() -> None:
+    page = DummyPage()
+    page.window = DummyWindow()
+    client = DesktopClient(page)
+    client.tray = DummyTray()
+
+    client._on_window_event(SimpleNamespace(type=ft.WindowEventType.FOCUS))
+    assert page.window.visible
+
+    client._on_window_event(SimpleNamespace(type=ft.WindowEventType.CLOSE))
+    assert not page.window.visible
+
+
+def test_tray_exit_stops_services_and_destroys_window() -> None:
+    page = DummyPage()
+    page.window = DummyWindow()
+    client = DesktopClient(page)
+    tray = DummyTray()
+    client.tray = tray
+    stopped = []
+    client._stop_engine = lambda: stopped.append(True)
+
+    asyncio.run(client._exit_application())
+
+    assert tray.stopped
+    assert stopped == [True]
+    assert not page.window.prevent_close
+    assert page.window.destroyed

@@ -19,7 +19,7 @@ main.py
 - `api` owns HTTP authentication, file and folder requests, remote-tree resolution, and safe conversion of remote names to local names.
 - `config` owns `.env` loading, persisted user settings, access-token storage, and the English/Russian translation catalog.
 - `sync` owns local scanning, file watching, three-way change detection, uploads, downloads, deletions, and conflict copies.
-- `ui` owns Flet controls and desktop integration. Theme values and visible translations are loaded from packaged JSON resources.
+- `ui` owns Flet controls, desktop integration, atomic upload staging, and the optional native system-tray adapter. Theme values and visible translations are loaded from packaged JSON resources.
 - `models.py` defines the values shared across layers. `state.py` persists account- and directory-specific synchronization metadata.
 
 The UI never sends a selected file directly to HTTP. It first stages a complete file in the local sync directory, then wakes the engine. This keeps manual file selection and ordinary filesystem changes on the same synchronization path.

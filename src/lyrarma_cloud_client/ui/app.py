@@ -23,6 +23,7 @@ from ..models import FileEntry, FolderEntry, SyncEvent, SyncPhase, SyncView
 from ..state import StateStore
 from ..sync import SyncEngine, is_ignored, safe_join
 from .theme import DEFAULT_THEME
+from .tray import SystemTray
 from .uploads import stage_files
 
 
@@ -77,6 +78,8 @@ class DesktopClient:
         self.settings.language = self.translator.language
         self.api: CloudApi | None = None
         self.engine: SyncEngine | None = None
+        self.tray: SystemTray | None = None
+        self._exit_requested = False
         self.token = ""
         self.auth_mode = "login"
         self.screen = "login"
@@ -133,7 +136,12 @@ class DesktopClient:
         self.page.window.height = 820
         self.page.window.min_width = 920
         self.page.window.min_height = 680
-        self.page.on_close = self._on_close
+
+        self.page.window.prevent_close = True
+        self.page.window.on_event = self._on_window_event
+        self.page.on_close = self._on_page_close
+        self._start_tray()
+
         saved = self.credentials.load(self.settings.api_url, self.settings.username)
         if saved and token_is_current(saved[1]) and self.settings.api_url:
             self.token = saved[0]
@@ -142,7 +150,52 @@ class DesktopClient:
             self.credentials.clear()
             self._render_login()
 
-    def _on_close(self, _event=None) -> None:
+    def _start_tray(self) -> None:
+        self.tray = SystemTray(
+            title=self.translate("app_name"),
+            show_label=self.translate("tray_show"),
+            exit_label=self.translate("tray_exit"),
+            on_show=self._request_show_window,
+            on_exit=self._request_exit,
+        )
+        if not self.tray.start():
+            self.tray = None
+            self.page.window.prevent_close = False
+
+    def _on_window_event(self, event: ft.WindowEvent) -> None:
+        if event.type != ft.WindowEventType.CLOSE or self.tray is None:
+            return
+        self.page.window.visible = False
+        self.page.update()
+
+    def _request_show_window(self) -> None:
+        self.page.run_task(self._show_window)
+
+    async def _show_window(self) -> None:
+        self.page.window.visible = True
+        self.page.update()
+        await self.page.window.to_front()
+
+    def _request_exit(self) -> None:
+        self.page.run_task(self._exit_application)
+
+    async def _exit_application(self) -> None:
+        if self._exit_requested:
+            return
+        self._exit_requested = True
+        self._stop_tray()
+        await asyncio.to_thread(self._stop_engine)
+        self.page.window.prevent_close = False
+        await self.page.window.destroy()
+
+    def _stop_tray(self) -> None:
+        tray = self.tray
+        self.tray = None
+        if tray:
+            tray.stop()
+
+    def _on_page_close(self, _event=None) -> None:
+        self._stop_tray()
         self._stop_engine()
 
     def _stop_engine(self) -> None:
@@ -232,6 +285,12 @@ class DesktopClient:
         self.settings.language = self.translator.language
         self.settings_store.save(self.settings)
         self.page.title = self.translate("app_name")
+        if self.tray:
+            self.tray.update_labels(
+                title=self.translate("app_name"),
+                show_label=self.translate("tray_show"),
+                exit_label=self.translate("tray_exit"),
+            )
         if self.screen == "dashboard":
             self._render_dashboard()
         else:

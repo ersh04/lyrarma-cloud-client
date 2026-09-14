@@ -129,6 +129,8 @@
     "session_expired": "Your session has expired. Please sign in again.",
     "select_sync_folder": "Select the Lyrarma Cloud folder",
     "select_files": "Select files to add",
+    "tray_show": "Open Lyrarma Cloud",
+    "tray_exit": "Exit",
     "close": "Close"
   },
   "ru": {
@@ -261,6 +263,8 @@
     "session_expired": "Сессия истекла. Войдите снова.",
     "select_sync_folder": "Выберите папку Lyrarma Cloud",
     "select_files": "Выберите файлы",
+    "tray_show": "Открыть Lyrarma Cloud",
+    "tray_exit": "Выйти",
     "close": "Закрыть"
   }
 }

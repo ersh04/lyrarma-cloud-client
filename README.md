@@ -17,6 +17,7 @@ log, search, safe conflict resolution, and in-app settings.
 - Keep a recoverable local history of files deleted from the cloud.
 - Enable or disable public access and copy public links.
 - Add files manually, search, review the event log, and change the sync folder.
+- Keep synchronization running in the system tray and exit from its native menu.
 
 ## Quick start
 
@@ -33,6 +34,11 @@ On Linux Wayland sessions, the client automatically uses XWayland to avoid a
 Flutter 3.44 rendering regression. Set `GDK_BACKEND=wayland` before launch to
 opt out. Flet uses Zenity for the system file picker. If the picker does not
 open, install `zenity` with your distribution's package manager.
+
+Closing the window keeps synchronization active in the system tray. Use **Exit**
+from the tray menu to stop the synchronization engine and close the application.
+On basic Xorg trays without native menu support, clicking the icon performs Exit.
+If no tray backend is available, the window uses normal close behavior instead.
 
 ## Configuration
 
